@@ -1,4 +1,4 @@
-小月神api 定制版 1.3.80
+小月神api 定制版 1.3.81
 
 基于 Cockpit Tools，原作者：jlcodes99 / jlcodes。
 原项目：https://github.com/jlcodes99/cockpit-tools
@@ -18,3 +18,5 @@ Claude API：https://ai.lmgai.cn
 客服 QQ：37579735；QQ群：1108278250。
 源码与定制版发行地址：https://github.com/3126942881/nmoon-api
 1.3.80 新增独立 GitHub 发布渠道和签名在线更新。
+
+1.3.81 修复内置中转站配置残留旧域名造成的额度查询 404，并统一网站与注册链接。

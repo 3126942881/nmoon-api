@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from 'node:fs';
 
 import {
   APIKEY_FUN_GLOBAL_ENDPOINT,
@@ -32,6 +33,15 @@ test("nmoon preset points to the configured website and API", () => {
   assert.equal(APIKEY_FUN_REGISTER_URL, "https://ai.lmgai.cn/register");
   assert.equal(APIKEY_FUN_GLOBAL_ENDPOINT, "https://ai.lmgai.cn");
   assert.equal(APIKEY_FUN_PROVIDER_BASE_URL, "https://ai.lmgai.cn/v1");
+});
+
+test('bundled sponsor routes and website links agree with the brand preset', () => {
+  const config = JSON.parse(readFileSync(new URL('../../announcements.json', import.meta.url), 'utf8'));
+  const sponsor = config.sponsorModule.sponsors.find((item: { id: string }) => item.id === 'nmoon');
+  assert.equal(sponsor.url, APIKEY_FUN_GLOBAL_ENDPOINT);
+  assert.equal(sponsor.integration.baseUrl, APIKEY_FUN_PROVIDER_BASE_URL);
+  assert.equal(sponsor.integration.website, APIKEY_FUN_GLOBAL_ENDPOINT);
+  assert.equal(sponsor.integration.apiKeyUrl, APIKEY_FUN_REGISTER_URL);
 });
 
 test("registration normalization does not redirect other providers", () => {

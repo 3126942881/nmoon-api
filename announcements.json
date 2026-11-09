@@ -1,5 +1,5 @@
 {
-  "version": "nmoon-1",
+  "version": "nmoon-1.3.81",
   "forceRefreshVersions": [],
   "topRightAd": null,
   "apiRelayEnabled": true,
@@ -23,21 +23,21 @@
         "name": "小月神api",
         "priority": 100,
         "logoUrl": null,
-        "url": "https://www.nmoon.cc",
+        "url": "https://ai.lmgai.cn",
         "badge": "AI 中转",
         "description": "小月神api 中转服务，支持密钥额度查询与快捷接入。",
         "integration": {
           "enabled": true,
           "type": "sub2api",
-          "baseUrl": "https://www.nmoon.cc/v1",
+          "baseUrl": "https://ai.lmgai.cn/v1",
           "baseUrlAliases": [],
           "wireApi": "responses",
           "quickConfigure": true,
           "dashboardCard": true,
           "models": [],
           "supportsVision": false,
-          "website": "https://www.nmoon.cc",
-          "apiKeyUrl": "https://www.nmoon.cc/register"
+          "website": "https://ai.lmgai.cn",
+          "apiKeyUrl": "https://ai.lmgai.cn/register"
         },
         "targetVersions": "*",
         "targetLanguages": [

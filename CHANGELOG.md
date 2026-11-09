@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.3.81] - 2026-11-09
+
+### Fixed
+
+- Fix quota lookup returning nginx 404 because bundled sponsor settings overrode the new domain with the former Nmoon endpoint. Quota, model, website and registration routes now use ai.lmgai.cn.
+- Add regressions exercising the page with the actual bundled configuration.
+
 ## [1.3.80] - 2026-11-07
 
 ### Added

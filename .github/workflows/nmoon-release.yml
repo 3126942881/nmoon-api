@@ -22,7 +22,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
       ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
-      CARGO_BUILD_JOBS: '2'
+      CARGO_BUILD_JOBS: '4'
       CARGO_INCREMENTAL: '0'
     steps:
       - uses: actions/checkout@v4
