@@ -1,0 +1,12 @@
+{
+  "bundle": {
+    "targets": ["app", "dmg"],
+    "createUpdaterArtifacts": true,
+    "macOS": {
+      "bundleName": "小月神api",
+      "minimumSystemVersion": "12.0",
+      "signingIdentity": "-",
+      "infoPlist": "Info.nmoon-macos.plist"
+    }
+  }
+}

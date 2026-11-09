@@ -1,0 +1,10 @@
+[package]
+name = "verify-nmoon-update"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+base64 = "0.22"
+minisign-verify = "0.2"
