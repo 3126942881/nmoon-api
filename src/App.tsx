@@ -2351,11 +2351,11 @@ function MainApp() {
         );
         const autoInstall = settings?.auto_install ?? false;
         applyUpdateReminderPreference(settings?.remind_on_update ?? true, preferenceRevision);
-        if (settings?.auto_check === false) {
+          if (settings?.auto_check === false && !autoInstall) {
           writeUpdateLog('info', '自动更新检查已关闭，保留手动检查入口');
           return;
         }
-        if (trigger === 'hourly' && !(await invoke<boolean>('should_check_updates'))) {
+          if (trigger === 'hourly' && !autoInstall && !(await invoke<boolean>('should_check_updates'))) {
           return;
         }
         const skippedVersion = (settings?.skipped_version ?? '').trim();

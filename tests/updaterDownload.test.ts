@@ -130,6 +130,25 @@ function harness(options: {
 const started: DownloadEvent = { event: 'Started', data: { contentLength: 1000 } };
 const chunk = (size: number): DownloadEvent => ({ event: 'Progress', data: { chunkLength: size } });
 
+test('enabling automatic installation overrides the old manual-only check preference', async () => {
+  const h = harness({ settings: async () => ({ auto_check: false, auto_install: true }) });
+  h.background();
+  await settlePromises();
+  assert.equal(h.checks(), 1);
+  h.poll();
+  await settlePromises();
+  assert.equal(h.checks(), 2);
+});
+
+test('manual-only users keep background checks disabled until opting in', async () => {
+  const h = harness({ settings: async () => ({ auto_check: false, auto_install: false }) });
+  h.background();
+  await settlePromises();
+  h.poll();
+  await settlePromises();
+  assert.equal(h.checks(), 0);
+});
+
 test('manual download followed by the hourly check keeps one task and real progress', async () => {
   const update = candidate();
   const h = harness({ check: async () => update });

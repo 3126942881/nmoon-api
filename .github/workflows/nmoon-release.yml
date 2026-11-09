@@ -49,6 +49,7 @@ jobs:
       - uses: swatinem/rust-cache@v2
         with:
           key: nmoon-windows
+          cache-on-failure: true
       - name: Install dependencies and verify
         run: |
           npm ci
