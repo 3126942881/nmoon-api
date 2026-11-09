@@ -1,0 +1,257 @@
+name: "🚀 PR Build Matrix"
+
+run-name: "🚀 PR build matrix · ${{ github.ref_name }}"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "main"
+  push:
+    branches:
+      # Trusted default-branch builds seed caches readable by future tags.
+      - "main"
+      - "feature/build-matrix*"
+      - "feature/build-matrix/**"
+
+concurrency:
+  group: build-matrix-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CGO_ENABLED: "0"
+
+jobs:
+  prepare:
+    name: "🚦 Prepare shared build inputs"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: "📥 Checkout repository"
+        uses: actions/checkout@v5
+
+      - name: "⚡ Restore verified frontend"
+        id: frontend-cache
+        uses: actions/cache@v6
+        with:
+          path: dist
+          key: frontend-v1-${{ hashFiles('package.json', 'package-lock.json', 'index.html', 'vite.config.ts', 'tsconfig*.json', 'src/**', 'public/**', 'announcements.json', 'remote-config.json', 'scripts/check_locales.cjs', 'scripts/sync-version.js', '.github/workflows/build-matrix.yml') }}
+
+      - name: "🟢 Set up Node.js"
+        if: steps.frontend-cache.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: "📦 Install frontend dependencies"
+        if: steps.frontend-cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: "⚡ Restore incremental typecheck state"
+        if: steps.frontend-cache.outputs.cache-hit != 'true'
+        id: typescript-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .ci-cache/frontend.tsbuildinfo
+          key: typescript-v1-${{ hashFiles('package-lock.json', 'tsconfig*.json') }}-${{ hashFiles('src/**', 'vite.config.ts') }}
+          restore-keys: |
+            typescript-v1-${{ hashFiles('package-lock.json', 'tsconfig*.json') }}-
+
+      - name: "🧪 Check and build frontend"
+        if: steps.frontend-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p .ci-cache
+          npm run sync-version
+          node scripts/check_locales.cjs
+          npx tsc --incremental --tsBuildInfoFile .ci-cache/frontend.tsbuildinfo --noEmit
+          npx vite build
+
+      - name: "💾 Save incremental typecheck state"
+        if: always() && steps.frontend-cache.outputs.cache-hit != 'true' && steps.typescript-cache.outputs.cache-hit != 'true' && steps.typescript-cache.outputs.cache-primary-key != ''
+        uses: actions/cache/save@v6
+        with:
+          path: .ci-cache/frontend.tsbuildinfo
+          key: ${{ steps.typescript-cache.outputs.cache-primary-key }}
+
+      - name: "📤 Share build inputs"
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-inputs
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+          path: |
+            dist
+
+      - name: "🧾 Publish preparation summary"
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### 🚦 Shared Build Inputs"
+            echo
+            echo "| Component | Status |"
+            echo "| --- | --- |"
+            echo "| Frontend checks and production assets | ${{ steps.frontend-cache.outputs.cache-hit == 'true' && '⚡ Cache hit' || '🔨 Rebuilt' }} |"
+            echo "| Reuse strategy | 📦 Downloaded by each native build |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  preflight-tests:
+    name: "🧪 Preflight: Regression Tests"
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Node.js setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: 📦 Install frontend dependencies
+        run: npm ci
+
+      - name: 🧪 TypeScript regression tests
+        run: npm test
+
+      - name: 🧪 Release script tests
+        run: npm run test:release
+
+
+  preflight-ts-windows:
+    name: "🪟 Preflight: TypeScript Tests"
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Node.js setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: 📦 Install frontend dependencies
+        run: npm ci
+
+      - name: 🧪 TypeScript regression tests
+        run: npm test
+
+  build:
+    name: "${{ matrix.icon }} ${{ matrix.label }}"
+    needs: [prepare, preflight-tests, preflight-ts-windows]
+    runs-on: ${{ matrix.platform }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - label: macOS arm64
+            cache_target: "macos-aarch64"
+            icon: "🍎"
+            platform: macos-latest
+            target: aarch64-apple-darwin
+            executable: target/aarch64-apple-darwin/ci/cockpit-tools
+          - label: macOS x64
+            cache_target: "macos-x86_64"
+            icon: "🍎"
+            platform: macos-latest
+            target: x86_64-apple-darwin
+            executable: target/x86_64-apple-darwin/ci/cockpit-tools
+          - label: Ubuntu 22.04 x64
+            cache_target: "linux-x86_64"
+            icon: "🐧"
+            platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            executable: target/x86_64-unknown-linux-gnu/ci/cockpit-tools
+          - label: Ubuntu 24.04 arm64
+            cache_target: "linux-aarch64"
+            icon: "🐧"
+            platform: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            executable: target/aarch64-unknown-linux-gnu/ci/cockpit-tools
+          - label: Windows x64
+            cache_target: "windows"
+            icon: "🪟"
+            platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            executable: target/x86_64-pc-windows-msvc/ci/cockpit-tools.exe
+
+    steps:
+      - name: "📥 Checkout repository"
+        uses: actions/checkout@v5
+
+      - name: "🐧 Install Linux build dependencies"
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
+            libssl-dev libnm-dev patchelf
+
+      - name: "🦀 Set up Rust"
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: 💾 Host build cache
+        uses: ./.github/actions/host-build-cache
+        with:
+          target: ${{ matrix.cache_target }}
+
+      - name: "📥 Reuse shared frontend"
+        uses: actions/download-artifact@v8
+        with:
+          name: build-inputs
+          path: .
+
+      - name: "🧪 Test account configuration preservation"
+        if: matrix.platform == 'ubuntu-22.04'
+        working-directory: src-tauri
+        run: |
+          cargo test instance_configuration_save --lib
+          cargo test quick_config_catalog_only_context_preservation --lib
+          cargo test claude_desktop_gateway --lib --locked
+
+      - name: "🧪 Test core Rust library"
+        if: matrix.platform == 'ubuntu-22.04'
+        run: cargo test --package cockpit-core -- --test-threads=1
+
+      - name: "🧱 Compile and link application"
+        run: |
+          echo "::group::Cargo build (${{ matrix.target }})"
+          cargo build --locked --profile ci -p cockpit-tools --bin cockpit-tools --target ${{ matrix.target }}
+          echo "::endgroup::"
+
+      - name: "✅ Verify executable"
+        shell: bash
+        run: test -f "${{ matrix.executable }}"
+
+      - name: "🧾 Publish build summary"
+        if: always()
+        shell: bash
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          {
+            echo "### ${{ matrix.icon }} Build: ${{ matrix.label }}"
+            echo
+            if [ "$JOB_STATUS" = "success" ]; then
+              echo "| Check | Result |"
+              echo "| --- | --- |"
+              printf '| Target | `%s` |\n' "${{ matrix.target }}"
+              echo "| Compile and link | ✅ Complete |"
+              echo "| Executable verification | ✅ Passed |"
+            else
+              printf '❌ Build did not complete for `%s`.\n' "${{ matrix.target }}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

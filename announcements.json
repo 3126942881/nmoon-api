@@ -1,0 +1,53 @@
+{
+  "version": "nmoon-1",
+  "forceRefreshVersions": [],
+  "topRightAd": null,
+  "apiRelayEnabled": true,
+  "topRightAdsEnabled": false,
+  "topRightAds": [],
+  "sponsorModule": {
+    "enabled": true,
+    "entryVisible": true,
+    "title": "小月神api",
+    "subtitle": "小月神api 中转服务，支持密钥额度查询与快捷接入。",
+    "targetVersions": "*",
+    "targetLanguages": [
+      "*"
+    ],
+    "createdAt": "2026-06-05T00:00:00Z",
+    "expiresAt": null,
+    "locales": {},
+    "sponsors": [
+      {
+        "id": "nmoon",
+        "name": "小月神api",
+        "priority": 100,
+        "logoUrl": null,
+        "url": "https://www.nmoon.cc",
+        "badge": "AI 中转",
+        "description": "小月神api 中转服务，支持密钥额度查询与快捷接入。",
+        "integration": {
+          "enabled": true,
+          "type": "sub2api",
+          "baseUrl": "https://www.nmoon.cc/v1",
+          "baseUrlAliases": [],
+          "wireApi": "responses",
+          "quickConfigure": true,
+          "dashboardCard": true,
+          "models": [],
+          "supportsVision": false,
+          "website": "https://www.nmoon.cc",
+          "apiKeyUrl": "https://www.nmoon.cc/register"
+        },
+        "targetVersions": "*",
+        "targetLanguages": [
+          "*"
+        ],
+        "createdAt": "2026-06-05T00:00:00Z",
+        "expiresAt": null,
+        "locales": {}
+      }
+    ]
+  },
+  "announcements": []
+}

@@ -1,0 +1,20 @@
+小月神api 定制版 1.3.80
+
+基于 Cockpit Tools，原作者：jlcodes99 / jlcodes。
+原项目：https://github.com/jlcodes99/cockpit-tools
+原项目许可：CC BY-NC-SA 4.0（署名、非商业性使用、相同方式共享）。
+许可全文：https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.zh-hans
+定制修改同样以 CC BY-NC-SA 4.0 共享；第三方依赖保留各自许可证。
+
+本定制版修改了站点品牌、联系方式、供应商预设、模型能力查询、
+模型目录与路由，以及在线更新和远程推广配置的加载方式。
+本版本基于官方 v1.3.80 完整源码，迁移小月神api 定制。
+1.3.68 为本地修复版编号，修复模型列表竞态、目录保存和客户端配置预览问题。
+GPT-6 系列模型目录和能力查询采用官方 v1.3.80 实现。
+
+网站：https://ai.lmgai.cn
+Codex / OpenAI API：https://ai.lmgai.cn/v1
+Claude API：https://ai.lmgai.cn
+客服 QQ：37579735；QQ群：1108278250。
+源码与定制版发行地址：https://github.com/3126942881/nmoon-api
+1.3.80 新增独立 GitHub 发布渠道和签名在线更新。
